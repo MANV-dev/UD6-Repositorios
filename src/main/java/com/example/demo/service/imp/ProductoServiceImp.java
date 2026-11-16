@@ -4,6 +4,8 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.entity.Producto;
@@ -83,6 +85,14 @@ public class ProductoServiceImp implements ProductoService{
 	public List<Producto> buscarPorCategoria(String nombre) {
 		
 		return productoRepository.findByCategoriaNombre(nombre);
+	}
+
+	//Pageable
+	
+	@Override
+	public Page<Producto> buscar(String categoria, Double precioMin, Double precioMax, Pageable pageable) {
+		
+		return productoRepository.findByCategoriaNombreAndPrecioBetween(categoria, precioMin, precioMax, pageable);
 	}
 
 

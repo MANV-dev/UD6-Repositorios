@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Listado de productos</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 40px 20px;
+            background: #f4f6f8;
+            color: #1f2937;
+            font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+        }
+
+        main {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            margin-top: 0;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgb(0 0 0 / 8%);
+        }
+
+        .filtros {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: end;
+            gap: 16px;
+        }
+
+        .campo {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            min-width: 180px;
+        }
+
+        label {
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        input {
+            padding: 10px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font: inherit;
+        }
+
+        button,
+        a.boton {
+            display: inline-block;
+            padding: 10px 16px;
+            border: 0;
+            border-radius: 6px;
+            background: #2563eb;
+            color: white;
+            font: inherit;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        a.boton.secundario {
+            background: #64748b;
+        }
+
+        .tabla-contenedor {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        th {
+            background: #f8fafc;
+        }
+
+        tbody tr:hover {
+            background: #f8fafc;
+        }
+
+        .precio {
+            text-align: right;
+            white-space: nowrap;
+        }
+
+        .sin-resultados {
+            text-align: center;
+            padding: 32px;
+            color: #64748b;
+        }
+
+        .metadatos {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 12px;
+        }
+
+        .dato {
+            padding: 14px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+        }
+
+        .dato span {
+            display: block;
+            margin-top: 4px;
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+
+        .paginacion {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .paginacion .deshabilitado {
+            color: #94a3b8;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+
+<body>
+<main>
+    <h1>Listado de productos</h1>
+
+    <section class="card">
+        <form class="filtros"
+              th:action="@{/productos/listar}"
+              method="get">
+
+            <div class="campo">
+                <label for="categoria">Categoría</label>
+                <input id="categoria"
+                       type="text"
+                       name="categoria"
+                       required
+                       th:value="${param.categoria[0]}">
+            </div>
+
+            <div class="campo">
+                <label for="precioMin">Precio mínimo</label>
+                <input id="precioMin"
+                       type="number"
+                       name="precioMin"
+                       required
+                       min="0"
+                       step="0.01"
+                       th:value="${param.precioMin[0]}">
+            </div>
+
+            <div class="campo">
+                <label for="precioMax">Precio máximo</label>
+                <input id="precioMax"
+                       type="number"
+                       name="precioMax"
+                       required
+                       min="0"
+                       step="0.01"
+                       th:value="${param.precioMax[0]}">
+            </div>
+
+            <button type="submit">Buscar</button>
+        </form>
+    </section>
+
+    <section class="card">
+        <div class="tabla-contenedor">
+            <table>
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nombre</th>
+                    <th>Categoría</th>
+                    <th class="precio">Precio</th>
+                </tr>
+                </thead>
+
+                <tbody>
+                <tr th:each="producto : ${pagina.content}">
+                    <td th:text="${producto.id}">1</td>
+                    <td th:text="${producto.nombre}">Producto</td>
+                    <td th:text="${producto.categoria?.nombre}">Categoría</td>
+                    <td class="precio"
+                        th:text="${#numbers.formatDecimal(producto.precio, 1, 2) + ' €'}">
+                        0,00 €
+                    </td>
+                </tr>
+
+                <tr th:if="${#lists.isEmpty(pagina.content)}">
+                    <td colspan="4" class="sin-resultados">
+                        No hay productos que cumplan los filtros.
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="card">
+        <div class="metadatos">
+            <div class="dato">
+                Total de elementos
+                <span th:text="${pagina.totalElements}">0</span>
+            </div>
+
+            <div class="dato">
+                Total de páginas
+                <span th:text="${pagina.totalPages}">0</span>
+            </div>
+
+            <div class="dato">
+                Página actual
+                <span th:if="${pagina.totalPages > 0}"
+                      th:text="${pagina.number + 1}">1</span>
+                <span th:if="${pagina.totalPages == 0}">0</span>
+            </div>
+
+            <div class="dato">
+                Primera página
+                <span th:text="${pagina.first ? 'Sí' : 'No'}">No</span>
+            </div>
+
+            <div class="dato">
+                Última página
+                <span th:text="${pagina.last ? 'Sí' : 'No'}">No</span>
+            </div>
+
+            <div class="dato">
+                Tamaño de página
+                <span th:text="${pagina.size}">5</span>
+            </div>
+        </div>
+    </section>
+
+    <nav class="paginacion" aria-label="Paginación de productos">
+        <a class="boton"
+           th:if="${!pagina.first}"
+           th:href="@{/productos/listar(
+               page=${pagina.number - 1},
+               size=${pagina.size},
+               sort=${'precio,asc'},
+               categoria=${param.categoria[0]},
+               precioMin=${param.precioMin[0]},
+               precioMax=${param.precioMax[0]}
+           )}">
+            Anterior
+        </a>
+
+        <span th:if="${pagina.first}" class="deshabilitado">
+            Anterior
+        </span>
+
+        <strong th:if="${pagina.totalPages > 0}">
+            Página
+            <span th:text="${pagina.number + 1}">1</span>
+            de
+            <span th:text="${pagina.totalPages}">1</span>
+        </strong>
+
+        <span th:if="${pagina.totalPages == 0}">
+            Página 0 de 0
+        </span>
+
+        <a class="boton"
+           th:if="${!pagina.last}"
+           th:href="@{/productos/listar(
+               page=${pagina.number + 1},
+               size=${pagina.size},
+               sort=${'precio,asc'},
+               categoria=${param.categoria[0]},
+               precioMin=${param.precioMin[0]},
+               precioMax=${param.precioMax[0]}
+           )}">
+            Siguiente
+        </a>
+
+        <span th:if="${pagina.last}" class="deshabilitado">
+            Siguiente
+        </span>
+    </nav>
+</main>
+</body>
+</html>
