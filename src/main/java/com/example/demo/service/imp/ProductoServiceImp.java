@@ -1,11 +1,15 @@
 package com.example.demo.service.imp;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
 
+import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import com.example.demo.dto.ProductoDTO;
 import com.example.demo.entity.Producto;
 import com.example.demo.repository.ProductoRepository;
 import com.example.demo.service.ProductoService;
@@ -85,5 +89,26 @@ public class ProductoServiceImp implements ProductoService{
 		return productoRepository.findByCategoriaNombre(nombre);
 	}
 
+	//Pageable
+	
+	@Override
+	public Page<Producto> buscar(String categoria, Double precioMin, Double precioMax, Pageable pageable) {
+		
+		return productoRepository.findByCategoriaNombreAndPrecioBetween(categoria, precioMin, precioMax, pageable);
+	}
 
+	private ProductoDTO transform(Producto producto) {
+		ModelMapper modelMapper = new ModelMapper();
+		return modelMapper.map(producto, ProductoDTO.class);
+	}
+	
+	@Override
+	public List<ProductoDTO> listarProductosDTO() {
+		List<Producto> productos = productoRepository.findAll();
+		List<ProductoDTO> dto = new ArrayList<>();
+		for(Producto p: productos) {
+			dto.add(transform(p));
+		}
+		return dto;
+	}
 }

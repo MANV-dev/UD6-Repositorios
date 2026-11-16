@@ -1,8 +1,11 @@
 package com.example.demo.service;
 
-
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
+import com.example.demo.dto.ProductoDTO;
 import com.example.demo.entity.Producto;
 
 public interface ProductoService {
@@ -20,6 +23,11 @@ public interface ProductoService {
 	List<Producto> buscarEntrePreciosOrdenNombre(Double min,Double max);
 	List<Producto> buscarEntrePreciosOrdenPrecio(Double min,Double max);
 	
-	
 	List<Producto> buscarPorCategoria(String nombre);
+	
+	//Pageable
+    Page<Producto> buscar(String categoria,Double precioMin,Double precioMax,Pageable pageable); 
+    
+    List<ProductoDTO> listarProductosDTO();
+	
 }
