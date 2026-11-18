@@ -1,4 +1,5 @@
 package com.example.demo.entity;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -11,15 +12,16 @@ public class Producto {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private long id ;
+	private long id;
 	private String nombre;
 	private Double precio;
 	private int stock;
-	
+	private String nombreImagen;
+
 	@ManyToOne
 	@JoinColumn(name = "categoria_id")
 	private Categoria categoria;
-	
+
 	public Producto() {
 		super();
 	}
@@ -32,7 +34,14 @@ public class Producto {
 		this.categoria = categoria;
 	}
 
-
+	public Producto(String nombre, Double precio, int stock, String nombreImagen, Categoria categoria) {
+		super();
+		this.nombre = nombre;
+		this.precio = precio;
+		this.stock = stock;
+		this.nombreImagen = nombreImagen;
+		this.categoria = categoria;
+	}
 
 	public long getId() {
 		return id;
@@ -72,6 +81,14 @@ public class Producto {
 
 	public void setCategoria(Categoria categoria) {
 		this.categoria = categoria;
+	}
+
+	public String getNombreImagen() {
+		return nombreImagen;
+	}
+
+	public void setNombreImagen(String nombreImagen) {
+		this.nombreImagen = nombreImagen;
 	}
 
 	@Override

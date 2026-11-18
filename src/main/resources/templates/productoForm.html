@@ -10,7 +10,7 @@
 
     <form th:object="${producto}"
           th:action="${editando} ? @{/productos/{id}/editar(id=${producto.id})} : @{/productos/formProducto}"
-		method="post">
+		method="post" enctype="multipart/form-data">
 
         <label>Nombre:</label>
         <input type="text" th:field="*{nombre}">
@@ -20,6 +20,11 @@
 
         <label>Stock:</label>
         <input type="number" th:field="*{stock}">
+        
+        <label>Imagen:</label>
+    	<input type="file" name="archivo"/>
+    	
+    	<br/><br/>
 
 		<br> <label>Categoría:</label> <select th:field="*{categoria}">
 			<option value="">-- Elige una --</option>

@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
@@ -15,6 +16,7 @@
                 <th>Nombre</th>
                 <th>Precio</th>
                 <th>Stock</th>
+                <th>Imagen</th>
                 <th>Categoría</th>
             </tr>
         </thead>
@@ -25,6 +27,12 @@
                 <td th:text="${producto.nombre}"></td>
                 <td th:text="${producto.precio}"></td>
                 <td th:text="${producto.stock}"></td>
+                <td>
+                <img th:if="${producto.nombreImagen != null}"
+     					th:src="@{/uploads/{nombre}(nombre=${producto.nombreImagen})}"
+     					alt="Imagen del producto"
+    					 width="120">
+    			</td>
                 <td th:text="${producto.categoria.nombre}"></td>
                 <td> <a th:href="@{/productos/{producto.id}/editar(id=${producto.id})}">
                 	Editar producto

@@ -1,5 +1,7 @@
 package com.example.demo.controller;
 
+import java.io.IOException;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -12,6 +14,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.example.demo.entity.Producto;
@@ -35,6 +38,7 @@ public class ProductoController {
 		this.categoriaService= categoriaService;
 	}
 	
+	// http://localhost:8080/productos/listar?categoria=Culinarios&precioMin=1&precioMax=7000
 	@GetMapping("/listar")
 	public String listar(
 			@RequestParam String categoria,
@@ -75,14 +79,20 @@ public class ProductoController {
 	}
 	
 	@PostMapping("/formProducto")
-	public String addProducto(@ModelAttribute("producto") Producto producto) {
-		productoService.crearProducto(producto);
-		return "redirect:/productos";
+	public String addProducto(
+	        @ModelAttribute("producto") Producto producto,
+	        @RequestParam(value = "archivo", required = false) MultipartFile archivo) throws IOException {
+	    Producto productoGuardado = productoService.crearProducto(producto);
+	    if (archivo != null && !archivo.isEmpty()) {
+	        productoService.subirImagen(productoGuardado.getId(), archivo);
+	    }
+	    
+	    return "redirect:/productos";
 	}
 	
 	
 	@PostMapping("/{id}/eliminarProducto")
-	public String eliminarProducto(@PathVariable long id, @ModelAttribute("producto") Producto producto) {
+	public String eliminarProducto(@PathVariable long id, @ModelAttribute("producto") Producto producto) throws IOException {
 		productoService.eliminarProducto(producto);
 		return "redirect:/productos";
 	}
@@ -99,14 +109,30 @@ public class ProductoController {
 	}
 	
 	@PostMapping("/{id}/editar")
-	public String editar(@PathVariable long id, @ModelAttribute("producto") Producto producto) {
+	public String editar(@PathVariable long id, @ModelAttribute("producto") Producto producto,
+			@RequestParam(value = "archivo", required = false) MultipartFile archivo) throws IOException {
 
-		productoService.crearProducto(producto);
+		Producto productoGuardado = productoService.crearProducto(producto);
+	    if (archivo != null && !archivo.isEmpty()) {
+	        productoService.subirImagen(productoGuardado.getId(), archivo);
+	    }
 
 		return "redirect:/productos";
 	}
 	
+	@GetMapping("/listarProductosDTO")
+	public String listarProductosDTO(Model model) {
+		model.addAttribute("productos", productoService.listarProductosDTO());
+		return "listaDTO";
+	}
 	
-	
+	@PostMapping("/productos/{id}/imagen")
+	public String subirImagen(
+	        @PathVariable Long id,
+	        @RequestParam("archivo") MultipartFile archivo) throws IOException {
+
+	    productoService.subirImagen(id, archivo);
+	    return "redirect:/productos/" + id;
+	}
 
 }

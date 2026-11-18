@@ -1,27 +1,52 @@
 package com.example.demo.service.imp;
 
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
 
+import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import com.example.demo.dto.ProductoDTO;
 import com.example.demo.entity.Producto;
 import com.example.demo.repository.ProductoRepository;
+import com.example.demo.service.AlmacenamientoService;
 import com.example.demo.service.ProductoService;
 
 @Service
 public class ProductoServiceImp implements ProductoService{
 
 	private ProductoRepository productoRepository;
+	private AlmacenamientoService almacenamientoService;
 	
 	
-	public ProductoServiceImp(ProductoRepository productoRepository) {
+	public ProductoServiceImp(ProductoRepository productoRepository, AlmacenamientoService almacenamientoService) {
 		this.productoRepository = productoRepository;
+		this.almacenamientoService = almacenamientoService;
 	}
+	public void guardarImagen(Long id, MultipartFile archivo)
+            throws IOException {
 
+        // Buscar producto
+        Producto producto = productoRepository.findById(id)
+                .orElseThrow(() ->
+                        new RuntimeException("Producto no encontrado"));
+
+        // Guardar imagen en disco
+        String nombreImagen =
+                almacenamientoService.guardarImagen(archivo);
+
+        // Actualizar producto
+        producto.setNombreImagen(nombreImagen);
+
+        // Guardar cambios en MySQL
+        productoRepository.save(producto);
+    }
+	
 	@Override
 	public Producto crearProducto(Producto p) {
 		return productoRepository.save(p);
@@ -45,11 +70,12 @@ public class ProductoServiceImp implements ProductoService{
 	}
 
 	@Override
-	public void eliminarProducto(Producto p) { 
+	public void eliminarProducto(Producto p) throws IOException { // El objeto es todo null menos el id por la cara
+		Producto pEntero = buscarPorId(p.getId());
+		almacenamientoService.borrarImagen(pEntero.getNombreImagen());
 		productoRepository.deleteById(p.getId());
 		
 	}
-
 	@Override
 	public List<Producto> buscarPorNombre(String nombre) {
 		return productoRepository.findByNombre(nombre);
@@ -95,5 +121,25 @@ public class ProductoServiceImp implements ProductoService{
 		return productoRepository.findByCategoriaNombreAndPrecioBetween(categoria, precioMin, precioMax, pageable);
 	}
 
-
+	private ProductoDTO transform(Producto producto) {
+		ModelMapper modelMapper = new ModelMapper();
+		return modelMapper.map(producto, ProductoDTO.class);
+	}
+	
+	@Override
+	public List<ProductoDTO> listarProductosDTO() {
+		List<Producto> productos = productoRepository.findAll();
+		List<ProductoDTO> dto = new ArrayList<>();
+		for(Producto p: productos) {
+			dto.add(transform(p));
+		}
+		return dto;
+	}
+	@Override
+	public void subirImagen(long id, MultipartFile archivo) throws IOException {
+		Producto p = buscarPorId(id);
+		String nombreImagen = almacenamientoService.guardarImagen(archivo);
+		p.setNombreImagen(nombreImagen);
+		productoRepository.save(p);
+	}
 }
